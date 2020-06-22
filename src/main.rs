@@ -44,6 +44,14 @@ struct CompareData {
 
 #[post("/compare", format = "json", data = "<data>")]
 fn compare_dna(data: Json<CompareData>) -> ApiResponse {
+    if !DNA::is_valid(data.dna1.clone()) || !DNA::is_valid(data.dna2.clone()) {
+        return ApiResponse {
+            json: json!({
+                "error": "DNA string not valid"
+            }),
+            status: Status::BadRequest,
+        };
+    }
     let dna1 = DNA::from(data.dna1.clone());
     let dna2 = DNA::from(data.dna2.clone());
     ApiResponse {
