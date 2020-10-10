@@ -43,6 +43,12 @@ struct CompareData {
 }
 
 #[derive(Deserialize)]
+struct MergeData {
+    dna1: String,
+    dna2: String,
+}
+
+#[derive(Deserialize)]
 struct DecodeData {
     dna: String,
 }
@@ -62,6 +68,31 @@ fn compare_dna(data: Json<CompareData>) -> ApiResponse {
     ApiResponse {
         json: json!({
             "similarity": DNA::compare(dna1, dna2),
+        }),
+        status: Status::Ok,
+    }
+}
+
+#[post("/merge", format = "json", data = "<data>")]
+fn merge_dna(data: Json<MergeData>) -> ApiResponse {
+    if !DNA::is_valid(data.dna1.clone()) || !DNA::is_valid(data.dna2.clone()) {
+        return ApiResponse {
+            json: json!({
+                "error": "DNA string not valid"
+            }),
+            status: Status::BadRequest,
+        };
+    }
+    let dna1 = DNA::from(data.dna1.clone());
+    let dna2 = DNA::from(data.dna2.clone());
+    let dna = DNA::merge(dna1, dna2, true).unwrap();
+    ApiResponse {
+        json: json!({
+            "pool_size": dna.pool_size,
+            "gene_size": dna.gene_size,
+            "dna_str": dna.to_string(),
+            "raw_value": dna.to_latent_vec(),
+            "raw_size": dna.to_latent_vec().len()
         }),
         status: Status::Ok,
     }
@@ -115,6 +146,9 @@ fn get_dna(pool_size: u16, gene_size: u16) -> ApiResponse {
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![index, get_dna, compare_dna, decode_dna])
+        .mount(
+            "/",
+            routes![index, get_dna, compare_dna, decode_dna, merge_dna],
+        )
         .launch();
 }
