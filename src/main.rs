@@ -49,6 +49,12 @@ struct MergeData {
 }
 
 #[derive(Deserialize)]
+struct ZeroInputData {
+    dna: String,
+    position: u16,
+}
+
+#[derive(Deserialize)]
 struct DecodeData {
     dna: String,
 }
@@ -113,6 +119,30 @@ fn decode_dna(data: Json<DecodeData>) -> ApiResponse {
     }
 }
 
+#[post("/zero", format = "json", data = "<data>")]
+fn zero_dna(data: Json<ZeroInputData>) -> ApiResponse {
+    let mut dna = DNA::from(data.dna.clone());
+    if data.position >= dna.pool_size {
+        return ApiResponse {
+            json: json!({
+                "error": "Invalid position"
+            }),
+            status: Status::BadRequest,
+        };
+    }
+    dna.genes[data.position as usize].zero();
+    ApiResponse {
+        json: json!({
+            "pool_size": dna.pool_size,
+            "gene_size": dna.gene_size,
+            "dna_str": dna.to_string(),
+            "raw_value": dna.to_latent_vec(),
+            "raw_size": dna.to_latent_vec().len()
+        }),
+        status: Status::Ok,
+    }
+}
+
 #[get("/dna?<pool_size>&<gene_size>")]
 fn get_dna(pool_size: u16, gene_size: u16) -> ApiResponse {
     if pool_size > 512 {
@@ -148,7 +178,7 @@ fn main() {
     rocket::ignite()
         .mount(
             "/",
-            routes![index, get_dna, compare_dna, decode_dna, merge_dna],
+            routes![index, get_dna, compare_dna, decode_dna, merge_dna, zero_dna],
         )
         .launch();
 }

@@ -279,9 +279,9 @@ dependencies = [
 
 [[package]]
 name = "genome"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b32127da5f0db8a53f8f0203588a5f0d2c5b2d0b302972e30e9d4f6e1eb2f180"
+checksum = "80295254483f33447ce395c52fe7657aee019bf6fb03ab0ce2a7c1f0b5b772a4"
 dependencies = [
  "arrayvec",
  "rand",
